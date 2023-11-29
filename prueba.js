@@ -59,7 +59,7 @@ function fillTable(employeeDataWithCompany) {
   let content = ``;
   employeeDataWithCompany.forEach((employee) => {
     content += `
-      <tr>
+      <tr id = '${employee.employeeId}'>
           <td>${employee.employeeId}</td>
           <td>${employee.companyId}</td>
           <td>${employee.company.name}</td>
@@ -86,14 +86,40 @@ async function addOneEmployee(employee){
   await apiInteraction('POST',"https://utn-lubnan-api-2.herokuapp.com/api/Employee",employee)
 }
 async function deleteOneEmployee(id){
-  await apiInteraction('DELETE','https://utn-lubnan-api-2.herokuapp.com/api/Employee/'+id)
-  .then(resolve=>console.log(resolve))
+  await apiInteraction('DELETE',`https://utn-lubnan-api-2.herokuapp.com/api/Employee/${id}`)
+  .then((response)=>{deleteFromTable(id)})
+}
+function deleteFromTable(id) {
+  const row = document.getElementById(id);
+
+  if (row) {
+    row.remove();
+    console.log(`Fila con ID ${id} eliminada correctamente.`);
+  } else {
+    console.error(`No se encontró la fila con ID ${id}.`);
+  }
 }
 
 async function addAndWaitToCreateTable(){
-  await addOneEmployee(testingPost);
+ // await addOneEmployee(testingPost);
   await addEmployeesToTable();
 }
 
+async function deleteOneEmployeeAndWait(id) {
+  await addAndWaitToCreateTable();
+  await deleteOneEmployee(id);
+}
 
-addAndWaitToCreateTable();
+// Llamada a la función que agrega empleados y espera a que la tabla se actualice
+addAndWaitToCreateTable()
+  .then(() => {
+    // Borra el empleado con el ID 15 después de que la tabla se haya actualizado
+    return deleteOneEmployeeAndWait(20);
+  })
+  .then(() => {
+    // Vuelve a agregar empleados y actualizar la tabla
+    return addAndWaitToCreateTable();
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+  });
