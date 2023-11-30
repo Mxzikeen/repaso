@@ -59,7 +59,7 @@ function fillTable(employeeDataWithCompany) {
   let content = ``;
   employeeDataWithCompany.forEach((employee) => {
     content += `
-      <tr id = '${employee.employeeId}'>
+      <tr id='${employee.employeeId}'>
           <td>${employee.employeeId}</td>
           <td>${employee.companyId}</td>
           <td>${employee.company.name}</td>
@@ -68,27 +68,32 @@ function fillTable(employeeDataWithCompany) {
           <td>${employee.email}</td>
           <td><i class="fa-solid fa-check" style="color: green;"></i></td>
           <td>
-              <button class="btn btn-sm btn-danger"><i class="fa-solid fa-trash-can"></i>Borrar</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteOneEmployee(${employee.employeeId})"><i class="fa-solid fa-trash-can"></i>Borrar</button>
           </td>
       </tr>`;
   });
   table.innerHTML = content;
 }
 
-let testingPost={
+let testingPost = {
   "employeeId": 1001,
   "companyId": 10,
   "firstName": "Agustin",
   "lastName": "Carnessali",
   "email": "agustin.com"
+};
+
+async function addOneEmployee(employee) {
+  await apiInteraction('POST', "https://utn-lubnan-api-2.herokuapp.com/api/Employee", employee);
 }
-async function addOneEmployee(employee){ 
-  await apiInteraction('POST',"https://utn-lubnan-api-2.herokuapp.com/api/Employee",employee)
+
+async function deleteOneEmployee(id) {
+  await apiInteraction('DELETE', `https://utn-lubnan-api-2.herokuapp.com/api/Employee/${id}`)
+    .then((response) => {
+      deleteFromTable(id);
+    });
 }
-async function deleteOneEmployee(id){
-  await apiInteraction('DELETE',`https://utn-lubnan-api-2.herokuapp.com/api/Employee/${id}`)
-  .then((response)=>{deleteFromTable(id)})
-}
+
 function deleteFromTable(id) {
   const row = document.getElementById(id);
 
@@ -100,8 +105,7 @@ function deleteFromTable(id) {
   }
 }
 
-async function addAndWaitToCreateTable(){
- // await addOneEmployee(testingPost);
+async function addAndWaitToCreateTable() {
   await addEmployeesToTable();
 }
 
@@ -112,14 +116,3 @@ async function deleteOneEmployeeAndWait(id) {
 
 // Llamada a la función que agrega empleados y espera a que la tabla se actualice
 addAndWaitToCreateTable()
-  .then(() => {
-    // Borra el empleado con el ID 15 después de que la tabla se haya actualizado
-    return deleteOneEmployeeAndWait(20);
-  })
-  .then(() => {
-    // Vuelve a agregar empleados y actualizar la tabla
-    return addAndWaitToCreateTable();
-  })
-  .catch((error) => {
-    console.error("Error:", error);
-  });
